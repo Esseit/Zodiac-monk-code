@@ -35,9 +35,7 @@ AddSubClass( // this is the function you will be calling to add the variant
 
 		fullname : "Way of the Soul", //if no fullname is defined it will be automatically generated as "Class Name (Subclass name)". In this example that would be: "MyClass (Path of SpecialMe)"
 
-		abilitySave : 6, //overwrites the abilitySave that was defined in the ClassList
-		abilitySaveAlt : 2,//overwrites the abilitySaveAlt that was defined in the ClassList
-		spellcastingFactor : 2, //overwrites the spellcastingFactor that was defined in the ClassList
+		spellcastingFactor : 5, //overwrites the spellcastingFactor that was defined in the ClassList
 
 		features : { //unlike the other entries, "features" will not delete all the features from the ClassList, but will add to the features in the ClassList. For this to work properly, the feature object has to be named "subclassfeatureX" and not something appropriate for the feature. The below are the features of the purple Dragon Knight
 
@@ -45,7 +43,7 @@ AddSubClass( // this is the function you will be calling to add the variant
 				name : "Zodiac Strike",
 				source : ["HB", 0],
 				minlevel : 3,
-				description : "\n   " + "I gain the ability to a preform a Zodiac strike as an action with an unarmed or monk weapon by expending a ki point.",
+				description : "\n   " + "I gain the ability to a preform a Zodiac strike as an action with an unarmed or monk weapon by expending a ki point that deals either an addtional Monk damage die or my currently active Zodiac Signs damage effect.",
 				eval : "AddAction(\"action\", \"Zodiac Strike\", \"\")", //eval is custom code that is run when the feature is added. It is used here, because the "Second Wind" bonus action is removed, and replaced by the "Second Wind (+ Rallying Cry)" bonus action. If you instead just want to add a bonus action for "Rallying Cry", use the action object (i.e. action : ["bonus action", ""],)
 				//removeeval is custom code that is run when the feature is removed. Here the "Second Wind (+ Rallying Cry)" bonus action is removed and replaced by the plain "Second Wind" bonus action
 			},
@@ -53,122 +51,198 @@ AddSubClass( // this is the function you will be calling to add the variant
 			name : "Star Sign",
 			source : ["HB", 0],
 			minlevel : 3,
-			description : desc([
-				"I choose a star sign to study under and may gain its benefits by taking its stance. I gain another sign at 6th, 11th, and 17th level.",
-				"\nDamage die for these abilities at the same rate as my monk damage die",
-				"\nChoose a star sign to study under from the more options button"
-			]),
-			choices : ["bear", "boar", "cobra", "crane", "dragon", "mantis", "monkey", "ox", "snow leopard", "stag", "tiger", "wolf"],
-			choicesNotInMenu : true,
-			"bear" : {
+			description : "\n   " + "I choose a star sign to study under and may gain its benefits by taking its stance. I may prepare one sign after every long rest by doing monrning warm ups in the zodiacs style. I gain another sign to prepare at 6th, 11th, and 17th level.", "\n   " + "Use the \"Choose Feature\" button above to add and remove Zodiac Styles to the third page"
+			additional : levels.map(function (n) {
+				return n < 3 ? "" : (n < 6 ? 1 : n < 11 ? 2 : n < 17 ? 3 : 4) + " Star Signs known at once";
+				}),
+				extraname : "Star Signs",
+				extrachoices : ["bear", "boar", "cobra", "crane", "dragon", "mantis", "monkey", "ox", "snow leopard", "stag", "tiger", "wolf"],
+				extraTimes : levels.map(function (n) {
+					return n < 3 ? 0 : n < 6 ? 1 : n < 11 ? 2 : n < 17 ? 3 : 4;
+				}),
+			"sign of the bear" : {
 				name : "Sign of the Bear",
 				description : desc([
-					"Symbol of endurance and authority, while channeling the Bear I gain hit points eqaul to half my monk level rounded up each time i hit with my Zodiac Strike.",
-					"\nWhile channeling the Bear I may use the Thaumaturgy cantrip at will and may gain advantage on intimidation checks, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					"\n " + "Symbol of endurance and authority, while channeling the Bear I or an ally within 5 ft gain hit points eqaul to  half my monk level rounded up each time I hit an opponent, or hit points equal to my monk level if I hit with my Zodiac Strike.",
+					"\n " + "While channeling the Bear I may use the Thaumaturgy cantrip at will and may gain advantage on intimidation checks, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Bear",
+						spells : ["thaumaturgy"],
+						selection : ["thaumaturgy"],
+						atwill : true
+					},
 				])
 			},
-			"boar" : {
+			"sign of the boar" : {
 				name : "Sign of the Boar",
 				description : desc([
-					"Symbol of fury and strength, while channeling the Boar each time my Zodiac damage shows the max result, i may reroll and add the new roll to the amount.",
-					"\nWhile channeling the Boar I may gain"
+					"\n " + "Symbol of fury and strength, while channeling the Boar each time my attack damage shows the max result, I may reroll and add the new roll to the amount. I may do so twice is it is on a Zodiac Strike's damage.",
+					"\n " + "While channeling the Boar I may cast the Compelled Duel spell at will, its spell level increasing with my monk dice increase rate,though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Boar",
+						spells : ["compelled duel"],
+						selection : ["compelled duel"],
+						atwill : true
+					},
 				])
 			},
-			"cobra" : {
+			"sign of the cobra" : {
 				name : "Sign of the Cobra",
 				description : desc([
-					"Symbol of sickness and alacrity, while channeling the Cobra I may make an attack anytime my Zodiac Strike fails to hit.",
-					"\nWhile channeling teh Cobra I may gain"
+					"\n " + "Symbol of sickness and alacrity, while channeling the Cobra when I deal damage to an oponent, I may force a Constitution saving throw to poison the target. Should I use my Zodiac Strike to cause this, they forced to disadvantage on thier Con save for this action. Poisoned targets take 1 monk damage die of poison damage at begining of thier turn till death or a successful Con saving throw is made.",
+					"\n " + "While channeling teh Cobra I may cast the Poison Spray cantrip at will, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Cobra",
+						spells : ["poison spray"],
+						selection : ["poison spray"],
+						atwill : true
+					},
 				])
 			},
-			"crane" : {
+			"sign of the crane" : {
 				name : "Sign of the Crane",
 				description : desc([
-					"Symbol of divinity and flight, while channeling the Crane my attacks while using Zodiac Strike is treated to have the reach property.",
-					"\nWhile channeling teh Crane I may gain the effects of the Feather Fall spell when falling a distnace greater than 10 ft. To gain this effect I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					"\n " + "Symbol of divinity and flight, while channeling the Crane my attacks damage type is replaced with radiant damage or if I use my Zodiac Strike I may add 2 monk damage dice to my attack.",
+					"\n " + "While channeling the Crane I may cast the Feather Fall spell at will, its spell level increasing with my monk dice increase rate, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Crane",
+						spells : ["feather fall"],
+						selection : ["feather fall"],
+						atwill : true
+					},
 				])
 			},
-			"dragon" : {
+			"sign of the dragon" : {
 				name : "Sign of the Dragon",
 				description : desc([
-					"Symbol of might and potency, while channeling the Dragon my attacks deal an extra 1d4 fire damage or 1d8 if i use my Zodiac Strike.",
-					"\nWhile channeling the Dragon I may use the Control Flames/Continual Flame cantrip at will. While using the cantrip, if I wish to expand the flame in anyway I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					"\n " + "Symbol of might and potency, while channeling the Dragon my attacks damage type is replaced by fire damage. When I use my Zodiac Strike, my attack creates an explosion of flame, knocking the enemy 5 ft backwards and seeting the area around him on fire.",
+					"\n " + "While channeling the Dragon I may use the Control Flames cantrip at will. While using the cantrip, if I wish to expand the flame in anyway I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Dragon",
+						spells : ["control flames"],
+						selection : ["control flames"],
+						atwill : true
+					},
 				])
 			},
-			"mantis" : {
+			"sign of the mantis" : {
 				name : "Sign of the Mantis",
 				description : desc([
-					"Symbol of patience and precision, while channeling the Mantis should an enemy in range make an attack against someonelse, I may use my Zodiac Strike against that enemy which deals an additional 1d8 piercing damage",
-					"\nWhile channeling the Mantis I may gain the ability to use True Strike cantrip at will, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					"\n " + "nSymbol of patience and precision, while channeling the Mantis my attacks damage type is replaced with piercing damage. Should an enemy in range make an attack against someonelse, I may use my Zodiac Strike as a reaction against that enemy which deals an additional 2 monk damage die piercing damage",
+					"\n " + "While channeling the Mantis I may gain the ability to use at will, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Mantis",
+						spells : ["thaumaturgy"],
+						selection : ["thaumaturgy"],
+						atwill : true
+					},
 				])
 			},
-			"monkey" : {
+			"sign of the monkey" : {
 				name : "Sign of the Monkey",
 				description : desc([
-					"Symbol of mobility and trickery, while channeling the Monkey I may move 10 ft wihtout provoking opperunity attacks each time I deal damage with my Zodiac Strike.",
-					"\nWhile channeling the Monkey I may gain"
+					"\n " + "Symbol of mobility and trickery, while channeling the Monkey, I may move 5 ft away from my opponent wihtout triggering an oppertunity attack. If I use my Zodiac Strike to trigger this effect, i may move 15 ft instead of 5.",
+					"\n " + "While channeling the Monkey I may gain the ability to use the Minor Illusion spell at will, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Monkey",
+						spells : ["minor illusion"],
+						selection : ["minor illusion"],
+						atwill : true
+					},
 				])
 			},
-			"ox" : {
+			"sign of the ox" : {
 				name : "Sign of the Ox",
 				description : desc([
-					"Symbol of indomitability and recklessness, while channeling the Ox each time i use my Zodiac Strike i may force my target back 10ft unless they make a strength saving throw.",
-					"\nWhile channeling the Ox I may gain"
+					"\n " + "Symbol of indomitability and recklessness, while channeling the Ox each time I deal damage to an opponent I may force them 5 ft in the direction of my attack, or if I use my Zodiac Strike I may force my target back 15ft unless they make a strength saving throw.",
+					"\n " + "While channeling the Ox I may cast the Floating Disk spell at will, its spell level increasing with my monk dice increase rate,though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Ox",
+						spells : ["floating disk"],
+						selection : ["floating disk"],
+						atwill : true
+					},
 				])
 			},
-			"snowleopard" : {
+			"sign of the snowleopard" : {
 				name : "Sign of the Snow Leopard",
 				description : desc([
-					"Symbol of persistance and confusion, while channeling the Snow Leopard when I use my Zodiac Strike ",
-					"\nWhile channeling Snow Leopard I may gain"
+					"\n " + "Symbol of deception and confusion, while channeling the Snow Leopard if an opponent makes an attack agaisnt me, I may use my reaction to disperse into a clpud of snowy smoke and starlight, and appear anywhere within 5 ft of the attacker. I may spend an addtional ki point to use my Zodiac Strike as a counter attack againt that enemy, which deals 2 monk damage die of bludgeoning damage.",
+					"\n " + "While channeling Snow Leopard I may cast the Fog Cloud spell at will, its spell level increasing with my monk dice increase rate,though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Snow Leopard",
+						spells : ["fog cloud"],
+						selection : ["fog cloud"],
+						atwill : true
+					},
 				])
 			},
-			"stag" : {
+			"sign of the stag" : {
 				name : "Sign of the Stag",
 				description : desc([
-					"Symbol of grace and serenity, while channeling the Stag i may cast the faerie fire spell when i use my Zodiac Strike, this then marks the target on hit amd the area of the spell follows them until i use this abaility again.",
-					"\nWhile channeling the Stag I may use the spell Faerie Fire at will, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					"\n " + "Symbol of grace and serenity, while channeling the Stag my attacks damage type is replaced by psychic damage. When I use my zodiac strike, it deals and extra monk damage die of damage and I may use the Faerie Fire spell on my opponent, this then marks the target on hit amd the area of the spell follows them until I use this ability again.",
+					"\n " + "While channeling the Stag I may use the spell Faerie Fire at will, it's spell level increasing with my monk die increase rate, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Stag",
+						spells : ["faerie fire"],
+						selection : ["faerie fire"],
+						atwill : true
+					},
 				])
 			},
-			"tiger" : {
+			"sign of the tiger" : {
 				name : "Sign of the Tiger",
 				description : desc([
-					"Symbol of power and ferocity, while channeling the Tiger ",
-					"\nWhile channeling the Tiger I may gain"
+					"\n " + "Symbol of power and ferocity, while channeling the Tiger my attacks damage is replaced by slashing damage. Whenever my Zodiac Strike hits an enemy, I may force a Constitution saving throw, if the target fails they a forced prone by a wave of starlight till the begining of my next turn.",
+					"\n " + "While channeling the Tiger I may use the Continual Flame spell at will and gain advantage on Intimidation checks, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Tiger",
+						spells : ["continual flame"],
+						selection : ["continual flame"],
+						atwill : true
+					},
 				])
 			},
-			"wolf" : {
+			"sign of the wolf" : {
 				name : "Sign of the Wolf",
 				description : desc([
-					"Symbol of unity and honor, while channeling the Wolf when I hit a target with my Zodiac Strike they are marked by strings of starlight, and remained marked until i hit another creature or the creature dies. My allies have advantage on the ttarget until the mark vanishes.",
-					"\nWhile channeling the Wolf I may gain"
+					"\n " + "Symbol of unity and honor, while channeling the Wolf I may use my action to aid an alley within 10 ft of me, giving them advantage on their next roll or disadvantage on the enemy should they use an action prompting a saving throw. If I hit a target with my Zodiac Strike they are marked by strings of starlight, and remained marked until i hit another creature or the creature dies. My allies have advantage on the ttarget until the mark vanishes.",
+					"\n " + "While channeling the Wolf I may use the spell Heroism at will, its spell level increasing with my monk die increase rate, though to successfully use it I must make a dual percentile roll and pass a dc of 65 - 5 * my monk level."
+					spellcastingBonus : {
+						name : "Sign of the Wolf",
+						spells : ["heroism"],
+						selection : ["heroism"],
+						atwill : true
+					},
 				])
 			},
 			action : ["bonus action"],
-		},
+			},
 			"subclassfeature4.1" : {
 				name : "Starlight Halo",
 				source : ["HB", 0],
 				minlevel : 4,
-				description : "\nI gain the ability to grant a halo of soft starlight to up to 3 creatures of my choosing. This halo grants darkvision to those without it for an hour or they may see throughmagic darkness for a minute."
+				action : ["bonus action", " (start/end)"],
+				description : "\n " + "I gain the ability to grant a halo of soft starlight to up to 3 creatures of my choosing. This halo grants darkvision to those without it for an hour or they may see through magic darkness for a minute. Those under this effect have disadvantage on stealth rolls."
 			},
 			"subclassfeature7" : {
 				name : "Fist of the Heavens",
 				source : ["HB", 0],
 				minlevel : 6,
-				description : "\nI gain the ability to infuse my Zodiac Strike with the fate determining power of the stars by spending an extra ki point. Should i hit, my targets next d20 roll is at disadvantage."
+				description : "\n " + "I gain the ability to infuse my Zodiac Strike with the fate determining power of the stars by spending an extra ki point. Should i hit, my targets next d20 roll is at disadvantage."
 			},
 			"subclassfeature10" : {
 				name : "Channel Hemisphere",
 				source : ["HB", 0],
 				minlevel : 11,
-				description : "\nWhile channeling, i may spend an addtional Ki point in order to briefly channel a second star sign. I gain the effects of both signs while using a zodiac strike.",
+				description : "\n " + "While channeling, i may spend an addtional Ki point in order to briefly channel a second star sign. I gain the effects of both signs while using a zodiac strike.",
 			},
 			"subclassfeature15" : {
 				name : "The Secret Star",
 				source : ["HB", 0],
 				minlevel : 17,
-				description : "\n"
+				description : "\n " + "After dedicated study, I have discovered the lost Zodiac constalation and gained it favor."
+			}
 		}
 	}
 );
